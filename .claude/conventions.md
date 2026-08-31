@@ -22,7 +22,7 @@ and a `<Redirect>` otherwise — nothing else.
 
 ### Colors come from `theme/colors.ts`
 
-It is the single source of truth; `tailwind.config.ts` feeds it to Tailwind via
+It is the single source of truth; `tailwind.config.mts` feeds it to Tailwind via
 `@config`. Never hardcode a hex — `react-native/no-color-literals` is an error.
 Use a Tailwind class or `colors.*`, and they will be the same value.
 

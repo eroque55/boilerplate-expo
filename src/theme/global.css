@@ -4,7 +4,7 @@
 
 @import 'nativewind/theme';
 
-@config '../../tailwind.config.ts';
+@config '../../tailwind.config.mts';
 
 @theme {
   --rem: 16px;

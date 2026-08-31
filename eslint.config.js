@@ -259,6 +259,7 @@ module.exports = defineConfig([
   },
   {
     files: ['**/*.config.*'],
+    plugins: { '@typescript-eslint': tseslint.plugin },
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-var-requires': 'off',

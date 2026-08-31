@@ -95,7 +95,7 @@ and maps it to each platform's native vocabulary. On Android it uses
 `performAndroidHapticsAsync` rather than the raw `Vibrator`, which is barely perceptible.
 Every `Pressable` fires one by default; opt out with `haptic={false}`.
 
-**Theme** — `theme/colors.ts` is the single source of truth. `tailwind.config.ts` feeds it to
+**Theme** — `theme/colors.ts` is the single source of truth. `tailwind.config.mts` feeds it to
 Tailwind through `@config`, so `text-primary` in a class and `colors.primary` in JS are
 always the same value.
 
