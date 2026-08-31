@@ -17,6 +17,10 @@ expo-env.d.ts
 *.p12
 *.key
 *.mobileprovision
+*.pem
+
+# testing
+coverage/
 
 # Metro
 .metro-health-check*
@@ -25,18 +29,21 @@ expo-env.d.ts
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+*.log
 
 # macOS
 .DS_Store
-*.pem
 
-# local env files
-.env*.local
+# env files
+.env*
+!.env.example
+
+# local agent files
+.claude/settings.local.json
+CLAUDE.local.md
 
 # typescript
 *.tsbuildinfo
-
-example
 
 # generated native folders
 /ios
