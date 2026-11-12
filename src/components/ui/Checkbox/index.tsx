@@ -1,47 +1,67 @@
-import { PropsWithChildren } from 'react';
-import {
-  FieldValues,
-  useController,
-  UseControllerProps,
-} from 'react-hook-form';
-import { View } from 'react-native';
+import { useEffect } from 'react';
+import Animated, {
+  FadeIn,
+  FadeOut,
+  interpolateColor,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
-import { colors } from '@/global/colors';
+import { useTheme } from '@/hooks/common';
+import { colors } from '@/theme/colors';
 
 import Icon from '../Icon';
-import Pressable from '../Pressable';
+import { AnimatedPressable } from '../Pressable';
 
-type Props<TFieldValues extends FieldValues> = UseControllerProps<TFieldValues>;
+type Props = {
+  isSelected?: boolean;
+  onPress?: () => void;
+  disabled?: boolean;
+};
 
-const Checkbox = <TFieldValues extends FieldValues>({
-  control,
-  name,
-  children,
-}: PropsWithChildren<Props<TFieldValues>>) => {
-  const { field } = useController({ control, name });
+const Checkbox = ({ isSelected = false, disabled = false, onPress }: Props) => {
+  const { isDark } = useTheme();
+
+  const activeValue = useSharedValue(isSelected ? 1 : 0);
+  const inactiveBackgroundColor = isDark ? colors.neutral[800] : colors.white;
+
+  const containerStyle = useAnimatedStyle(() => {
+    const backgroundColor = interpolateColor(
+      activeValue.value,
+      [0, 1],
+      [inactiveBackgroundColor, colors.alert.success],
+    );
+
+    return {
+      backgroundColor,
+    };
+  });
+
+  useEffect(() => {
+    activeValue.value = withTiming(isSelected ? 1 : 0);
+  }, [isSelected, activeValue]);
+
+  const handlePress = () => {
+    if (onPress) {
+      onPress();
+    }
+  };
 
   return (
-    <Pressable
-      className="flex-row items-center gap-2"
-      showFeedback={false}
-      onPress={() => field.onChange(!field.value)}
+    <AnimatedPressable
+      className="aspect-square w-6 items-center justify-center overflow-hidden rounded-md"
+      disabled={disabled}
+      haptic={isSelected ? 'toggleOff' : 'toggleOn'}
+      style={containerStyle}
+      onPress={handlePress}
     >
-      <View
-        className="h-6 w-6 items-center justify-center overflow-hidden rounded-md"
-        hitSlop={12}
-        style={{
-          backgroundColor: field.value ? colors.alert.success[100] : undefined,
-          borderColor: colors.neutral[200],
-          borderWidth: field.value ? 0 : 1,
-        }}
-      >
-        {field.value && (
-          <Icon color={colors.white} name="CheckIcon" size={14} />
-        )}
-      </View>
-
-      {children}
-    </Pressable>
+      {isSelected && (
+        <Animated.View entering={FadeIn} exiting={FadeOut}>
+          <Icon color={colors.white} name="CheckIcon" size={16} />
+        </Animated.View>
+      )}
+    </AnimatedPressable>
   );
 };
 

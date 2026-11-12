@@ -1,6 +1,6 @@
-import '@/global/global.css';
+import '@/theme/global.css';
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { setDefaultOptions } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useFonts } from 'expo-font';
@@ -10,41 +10,23 @@ import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import Toast, { ErrorToast, ToastConfig } from 'react-native-toast-message';
 
 import { DefaultModal } from '@/components/ui';
-import { AuthProvider, useAuth } from '@/contexts/useAuth';
-import { colors } from '@/global/colors';
-import { useDimensions, useUpdate } from '@/hooks/common';
-import { useDropdownRouteReset } from '@/store/dropdownStore';
-import { handleError } from '@/utils/handleError';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { useDimensions, useTheme, useUpdate } from '@/hooks/common';
+import { queryClient } from '@/services/queryClient';
+import { colors } from '@/theme/colors';
 
-export { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+export { ErrorBoundary } from '@/components/layout';
 
 setDefaultOptions({ locale: ptBR });
 
-const toastConfig: ToastConfig = {
-  error: props => <ErrorToast {...props} text1NumberOfLines={2} />,
-};
-
-SplashScreen.preventAutoHideAsync();
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      gcTime: 20000,
-      retry: false,
-      initialDataUpdatedAt: 0,
-    },
-    mutations: {
-      onError: handleError,
-    },
-  },
-});
+void SplashScreen.preventAutoHideAsync();
 
 const ProtectedStack = () => {
   const { user } = useAuth();
   const { insets } = useDimensions();
+  const { isDark } = useTheme();
 
   return (
     <Stack
@@ -52,7 +34,9 @@ const ProtectedStack = () => {
         animation: 'fade',
         headerShown: false,
         contentStyle: {
-          backgroundColor: colors.white,
+          backgroundColor: isDark
+            ? colors.neutral[900]
+            : colors.lightBackground,
           paddingTop: insets.top,
           paddingBottom: insets.bottom,
           paddingLeft: insets.left,
@@ -60,6 +44,8 @@ const ProtectedStack = () => {
         },
       }}
     >
+      <Stack.Screen name="index" />
+
       <Stack.Protected guard={!user}>
         <Stack.Screen name="(auth)" />
       </Stack.Protected>
@@ -72,12 +58,10 @@ const ProtectedStack = () => {
 };
 
 const RootLayout = () => {
-  const isLoading = useUpdate();
+  const { isFirstCheck } = useUpdate();
   const [fontsLoaded] = useFonts({});
 
-  const isAppReady = !isLoading && fontsLoaded;
-
-  useDropdownRouteReset();
+  const isAppReady = !isFirstCheck && fontsLoaded;
 
   if (!isAppReady) {
     return null;
@@ -85,21 +69,19 @@ const RootLayout = () => {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <KeyboardProvider>
-        <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={queryClient}>
+        <KeyboardProvider>
           <SafeAreaProvider>
-            <AuthProvider isAppReady={isAppReady}>
+            <AuthProvider>
               <StatusBar style="auto" />
 
               <ProtectedStack />
 
               <DefaultModal />
-
-              <Toast config={toastConfig} />
             </AuthProvider>
           </SafeAreaProvider>
-        </QueryClientProvider>
-      </KeyboardProvider>
+        </KeyboardProvider>
+      </QueryClientProvider>
     </GestureHandlerRootView>
   );
 };

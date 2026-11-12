@@ -1,6 +1,15 @@
 import { create } from 'zustand';
 
-import { DefaultModalProps } from '@/components/ui/DefaultModal';
+export type DefaultModalProps = {
+  title: string;
+  message: string;
+  confirmText: string;
+  notice?: string;
+  onConfirm?: () => Promise<void> | void;
+  cancelText?: string;
+  onCancel?: () => Promise<void> | void;
+  successMessage?: string;
+};
 
 type Store = {
   modal: DefaultModalProps | null;

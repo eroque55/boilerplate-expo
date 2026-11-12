@@ -1,6 +1,5 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 
-import { queryKeys } from '@/constants/queryKeys';
 import { authService } from '@/services/api/auth';
 
 export const useLogin = () => {
@@ -16,8 +15,7 @@ export const useRefreshAccessToken = () => {
 };
 
 export const useFetchUser = () => {
-  return useQuery({
-    queryKey: queryKeys.user.me,
-    queryFn: authService.fetchUser,
+  return useMutation({
+    mutationFn: authService.fetchUser,
   });
 };

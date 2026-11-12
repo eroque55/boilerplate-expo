@@ -1,17 +1,18 @@
 import axios from 'axios';
-import * as SecureStore from 'expo-secure-store';
 
-const http = axios.create({
-  baseURL: 'https://sparkz.mestresdaweb.org/api/',
+import { storage } from '@/utils/storage';
+
+const api = axios.create({
+  baseURL: 'api',
 });
 
-http.interceptors.request.use(
-  async config => {
+api.interceptors.request.use(
+  config => {
     if (config.data?._parts) {
       config.headers['Content-Type'] = 'multipart/form-data';
     }
 
-    const accessToken = await SecureStore.getItemAsync('accessToken');
+    const accessToken = storage.getString('accessToken');
     if (accessToken) {
       config.headers!.Authorization = `Bearer ${accessToken}`;
     }
@@ -21,4 +22,4 @@ http.interceptors.request.use(
   error => Promise.reject(error),
 );
 
-export { http };
+export { api };

@@ -1,13 +1,14 @@
-import { router } from 'expo-router';
-import { useEffect } from 'react';
+import { useRouter } from 'expo-router';
+import { useCallback, useEffect } from 'react';
 import { BackHandler } from 'react-native';
 
 import { useDefaultModal } from '@/store/defaultModalStore';
 
 export const usePreventBack = (enabled?: boolean) => {
-  const { openModal } = useDefaultModal();
+  const router = useRouter();
+  const openModal = useDefaultModal(state => state.openModal);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (!enabled) {
       router.back();
       return;
@@ -20,7 +21,7 @@ export const usePreventBack = (enabled?: boolean) => {
       cancelText: 'Cancelar',
       onConfirm: () => router.back(),
     });
-  };
+  }, [enabled, router, openModal]);
 
   useEffect(() => {
     const backHandler = () => {
@@ -37,7 +38,7 @@ export const usePreventBack = (enabled?: boolean) => {
     return () => {
       backHandlerSubscription.remove();
     };
-  }, [enabled]);
+  }, [handleBack]);
 
   return { handleBack };
 };

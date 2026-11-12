@@ -9,11 +9,11 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { colors } from '@/global/colors';
+import { useTheme } from '@/hooks/common';
+import { colors } from '@/theme/colors';
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.neutral[100],
     overflow: 'hidden',
   },
   animatedWrapper: {
@@ -32,6 +32,7 @@ type Props = {
 };
 
 const Shimmer = ({ width, height, borderRadius = 2 }: Props) => {
+  const { isDark } = useTheme();
   const { width: screenWidth } = useWindowDimensions();
   const translateX = useSharedValue(-screenWidth);
 
@@ -45,7 +46,7 @@ const Shimmer = ({ width, height, borderRadius = 2 }: Props) => {
       -1,
       false,
     );
-  }, [screenWidth]);
+  }, [screenWidth, translateX]);
 
   return (
     <Animated.View
@@ -55,6 +56,7 @@ const Shimmer = ({ width, height, borderRadius = 2 }: Props) => {
           width: width || '100%',
           height: height || '100%',
           borderRadius,
+          backgroundColor: isDark ? colors.neutral[800] : colors.neutral[200],
         },
       ]}
     >
@@ -62,7 +64,7 @@ const Shimmer = ({ width, height, borderRadius = 2 }: Props) => {
         <LinearGradient
           colors={[
             colors.transparent,
-            'rgba(255, 255, 255, 0.7)',
+            isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.7)',
             colors.transparent,
           ]}
           end={{ x: 0, y: 0 }}

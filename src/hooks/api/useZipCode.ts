@@ -1,13 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 
-import { queryKeys } from '@/constants/queryKeys';
 import { zipCodeService } from '@/services/api/cep';
+import { normalize } from '@/utils/format';
 
 export const useZipCode = (zipCode: string) => {
-  const normalizedZipCode = zipCode.replace(/\D/g, '');
-
-  return useQuery({
-    queryKey: queryKeys.zipCode.all,
-    queryFn: () => zipCodeService.getAddress(normalizedZipCode),
+  return useMutation({
+    mutationFn: () => zipCodeService.getAddress(normalize(zipCode)),
   });
 };

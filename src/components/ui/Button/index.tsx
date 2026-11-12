@@ -1,17 +1,16 @@
-import { PropsWithChildren } from 'react';
 import {
   DimensionValue,
   GestureResponderEvent,
   PressableProps,
   Text,
 } from 'react-native';
-import { AnimatedProps, LinearTransition } from 'react-native-reanimated';
+import { LinearTransition } from 'react-native-reanimated';
 
-import { colors } from '@/global/colors';
 import { useDisableDelay } from '@/hooks/common';
+import { colors } from '@/theme/colors';
 
 import Icon, { IconProps } from '../Icon';
-import { AnimatedPressable } from '../Pressable';
+import { AnimatedPressable, AnimatedPressableProps } from '../Pressable';
 
 import ButtonActivityIndicator from './ButtonActivityIndicator';
 
@@ -23,20 +22,23 @@ type Props = {
   isLoading?: boolean;
   width?: DimensionValue;
   withoutDelay?: boolean;
-} & PressableProps &
-  AnimatedProps<PropsWithChildren<PressableProps>>;
+  useLayoutAnimation?: boolean;
+} & AnimatedPressableProps &
+  PressableProps;
 
 const Button = ({
   text,
   wired = false,
-  color = colors.primary[100],
+  color = colors.primary,
   isLoading = false,
   onPress,
   withoutDelay = false,
   width = '100%',
   leftIcon,
+  style,
+  useLayoutAnimation = true,
   ...props
-}: PropsWithChildren<Props>) => {
+}: Props) => {
   const { executeWithDelay, isLoading: loading } = useDisableDelay();
 
   const handleColor = () => {
@@ -52,7 +54,7 @@ const Button = ({
       return color;
     }
 
-    return colors.white;
+    return colors.neutral[100];
   };
 
   const handlePress = async (e: GestureResponderEvent) => {
@@ -70,13 +72,16 @@ const Button = ({
 
   return (
     <AnimatedPressable
-      className="flex-row items-center justify-center gap-3 overflow-hidden rounded-lg border-2 p-2"
-      layout={LinearTransition}
-      style={{
-        backgroundColor: handleColor(),
-        borderColor: wired ? color : colors.transparent,
-        width,
-      }}
+      className="flex-row items-center justify-center gap-3 overflow-hidden rounded-full border-2 p-3"
+      layout={useLayoutAnimation ? LinearTransition : undefined}
+      style={[
+        {
+          backgroundColor: handleColor(),
+          borderColor: wired ? color : colors.transparent,
+          width,
+        },
+        style,
+      ]}
       onPress={handlePress}
       {...props}
     >
@@ -93,7 +98,7 @@ const Button = ({
         {text}
       </Text>
 
-      {(isLoading || loading) && <ButtonActivityIndicator />}
+      <ButtonActivityIndicator isLoading={isLoading || loading} />
     </AnimatedPressable>
   );
 };

@@ -11,7 +11,7 @@ const ErrorText = ({ text }: Props) => {
 
   return (
     <Animated.Text
-      className="font-areaextend text-xs text-alert-error-100"
+      className="text-alert-error text-xs"
       entering={FadeIn}
       exiting={FadeOut}
     >

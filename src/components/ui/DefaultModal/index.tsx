@@ -6,17 +6,6 @@ import ModalBackdrop from '../ModalBackdrop';
 
 import DefaultModalButton from './DefaultModalButton';
 
-export type DefaultModalProps = {
-  title: string;
-  message: string;
-  confirmText: string;
-  notice?: string;
-  onConfirm?: () => Promise<void> | void;
-  cancelText?: string;
-  onCancel?: () => Promise<void> | void;
-  successMessage?: string;
-};
-
 const DefaultModal = () => {
   const { modal, closeModal, openModal } = useDefaultModal();
 
@@ -51,23 +40,28 @@ const DefaultModal = () => {
     <ModalBackdrop>
       <View
         key={modal.message}
-        className="w-full overflow-hidden rounded-lg bg-white"
+        className="w-full overflow-hidden rounded-lg bg-white dark:bg-neutral-800"
       >
-        <View className="bg-neutral-background p-3">
-          <Text className="text-xl text-neutral-100">{modal.title}</Text>
+        <View className="bg-neutral-100 p-3 dark:bg-neutral-700">
+          <Text className="text-lg text-neutral-600 dark:text-neutral-200">
+            {modal.title}
+          </Text>
         </View>
 
-        <View className="border-neutral-20 min-h-28 gap-2 border-y p-3">
-          <Text className="text-neutral-80 text-base">{modal.message}</Text>
+        <View className="min-h-28 gap-2 border-t border-b border-neutral-200 p-3 dark:border-neutral-600">
+          <Text className="text-base text-neutral-600 dark:text-neutral-300">
+            {modal.message}
+          </Text>
 
           {modal.notice && (
-            <Text className="text-sm text-neutral-600">{modal.notice}</Text>
+            <Text className="text-sm text-neutral-400">{modal.notice}</Text>
           )}
         </View>
 
         <View className="flex-row">
           {modal.cancelText && (
             <DefaultModalButton
+              showBorder
               text={modal.cancelText}
               onPress={handleCancel}
             />

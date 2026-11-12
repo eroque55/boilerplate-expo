@@ -37,15 +37,18 @@ const ModalBackdrop = ({ onPress, children }: PropsWithChildren<Props>) => {
   }, [onPress]);
 
   useEffect(() => {
-    KeyboardController.dismiss();
+    void KeyboardController.dismiss();
   }, []);
 
   return (
     <Animated.View
-      className="absolute w-screen bg-black/25"
+      className="absolute w-screen bg-[rgba(0,0,0,0.2)] dark:bg-[rgba(0,0,0,0.6)]"
       entering={FadeIn}
       exiting={FadeOut}
-      style={{ height, width }}
+      style={{
+        height,
+        width,
+      }}
     >
       <KeyboardAvoidingView behavior="padding" className="flex-1">
         <Pressable

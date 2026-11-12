@@ -1,79 +1,48 @@
-import type { AxiosError } from 'axios';
-import axios from 'axios';
-import Toast from 'react-native-toast-message';
+import { isAxiosError } from 'axios';
 
-const handleCustomErrors = (error: AxiosError<ApiErrorResponse>): string => {
-  const errorMessage =
-    error.response?.data?.error?.message || error.response?.data?.message;
+const DEFAULT_MESSAGE = 'Houve um imprevisto, tente novamente mais tarde';
 
-  if (!errorMessage || typeof errorMessage !== 'string') {
-    return 'Houve um imprevisto, tente novamente mais tarde';
+const getApiMessage = (data: unknown): string | undefined => {
+  if (typeof data === 'string') {
+    return data;
   }
 
-  if (errorMessage.includes('Too many requests, please try again later.')) {
-    return 'Muitas requisições, tente mais tarde.';
+  if (!data || typeof data !== 'object') {
+    return undefined;
   }
 
-  if (errorMessage.includes('Your new password must be different')) {
-    return 'Sua nova senha deve ser diferente da senha atual.';
-  }
-
-  if (
-    errorMessage.includes('Passwords do not match') ||
-    errorMessage.includes('The provided current password')
-  ) {
-    return 'Senha atual inválida';
-  }
-
-  if (errorMessage.includes('Invalid identifier or password')) {
-    return 'Dados inválidos';
-  }
-
-  return errorMessage;
-};
-
-export const handleError = (
-  err: AxiosError | string | Error | unknown,
-): void => {
-  // console.log(JSON.stringify(err, null, 2));
-
-  if (axios.isAxiosError(err)) {
-    return Toast.show({
-      type: 'error',
-      text1: handleCustomErrors(err),
-    });
-  }
-
-  if (err instanceof Error) {
-    return Toast.show({
-      type: 'error',
-      text1: err.message,
-    });
-  }
-
-  if (typeof err === 'string') {
-    return Toast.show({
-      type: 'error',
-      text1: err,
-    });
-  }
-
-  return Toast.show({
-    type: 'error',
-    text1: 'Houve um imprevisto, tente novamente mais tarde',
-  });
-};
-
-export const handleSuccess = (message: string): void => {
-  Toast.show({
-    type: 'success',
-    text1: message,
-  });
-};
-
-type ApiErrorResponse = {
-  error?: {
-    message?: string;
+  const { message, error } = data as {
+    message?: unknown;
+    error?: { message?: unknown };
   };
-  message?: string;
+
+  if (typeof message === 'string') {
+    return message;
+  }
+
+  if (typeof error?.message === 'string') {
+    return error.message;
+  }
+
+  return undefined;
+};
+
+export const handleError = (error: string | Error | unknown): string => {
+  if (__DEV__) {
+    console.error(error);
+  }
+
+  if (typeof error === 'string') {
+    return error;
+  }
+
+  if (isAxiosError(error)) {
+    return getApiMessage(error.response?.data) ?? DEFAULT_MESSAGE;
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return DEFAULT_MESSAGE;
 };

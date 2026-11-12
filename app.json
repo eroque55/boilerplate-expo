@@ -1,40 +1,32 @@
 {
   "expo": {
-    "name": "changethisname",
-    "slug": "changethisname",
+    "name": "changeme",
+    "slug": "changeme",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/expo/icon.png",
-    "scheme": "myapp",
-    "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "updates": {
-      "fallbackToCacheTimeout": 0
-    },
+    "scheme": "changeme",
+    "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.eroque55.changeme"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/expo/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "edgeToEdgeEnabled": true
-    },
-    "web": {
-      "output": "static",
-      "favicon": "./assets/expo/favicon.png",
-      "bundler": "metro"
+      "package": "com.eroque55.changeme"
     },
     "plugins": [
       "expo-router",
+      "expo-secure-store",
       [
         "expo-splash-screen",
         {
           "image": "./assets/expo/splash-icon.png"
         }
-      ],
-      "expo-font"
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

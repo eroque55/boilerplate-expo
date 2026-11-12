@@ -1,4 +1,5 @@
-import { Text, View } from 'react-native';
+import { Text } from 'react-native';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 type Props = {
   text?: string;
@@ -6,9 +7,13 @@ type Props = {
 
 const EmptyComponent = ({ text = 'Nada encontrado' }: Props) => {
   return (
-    <View className="flex-1 items-center justify-center py-10">
-      <Text className="text-base text-neutral-600">{text}</Text>
-    </View>
+    <Animated.View
+      className="flex-1 items-center justify-center py-10"
+      entering={FadeIn}
+      exiting={FadeOut}
+    >
+      <Text className="text-base text-neutral-400">{text}</Text>
+    </Animated.View>
   );
 };
 

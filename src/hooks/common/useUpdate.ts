@@ -1,33 +1,60 @@
 import * as Updates from 'expo-updates';
-import { useEffect, useState } from 'react';
-
-import { handleSuccess } from '@/utils/handleError';
+import { useCallback, useEffect, useState } from 'react';
 
 export const useUpdate = () => {
-  const [isLoading, setIsLoadingUpdate] = useState(false);
+  const [needsCheck, setNeedsCheck] = useState(true);
+  const [hasUpdate, setHasUpdate] = useState(false);
+  const [isFirstCheck, setIsFirstCheck] = useState(__DEV__ ? false : true);
 
-  useEffect(() => {
-    const update = async () => {
-      if (__DEV__) {
+  const update = useCallback(async () => {
+    try {
+      await Updates.fetchUpdateAsync();
+
+      if (isFirstCheck) {
+        await Updates.reloadAsync();
         return;
       }
+    } catch {
+      //
+    }
+  }, [isFirstCheck]);
 
-      try {
-        setIsLoadingUpdate(true);
-        const { isAvailable } = await Updates.checkForUpdateAsync();
+  const checkForUpdates = useCallback(async () => {
+    if (hasUpdate) {
+      return;
+    }
 
-        if (isAvailable) {
-          handleSuccess('Aplicativo Atualizando');
-          await Updates.fetchUpdateAsync();
-          await Updates.reloadAsync();
-        }
-      } finally {
-        setIsLoadingUpdate(false);
+    try {
+      const { isAvailable } = await Updates.checkForUpdateAsync();
+      setHasUpdate(isAvailable);
+
+      if (isAvailable) {
+        await update();
       }
-    };
 
-    update();
-  }, []);
+      setNeedsCheck(false);
+      setIsFirstCheck(false);
+    } catch {
+      setHasUpdate(false);
+      setNeedsCheck(false);
+      setIsFirstCheck(false);
+    }
+  }, [hasUpdate, update]);
 
-  return isLoading;
+  useEffect(() => {
+    if (needsCheck) {
+      void checkForUpdates();
+    }
+
+    const timer = setTimeout(
+      () => {
+        setNeedsCheck(true);
+      },
+      1 * 60 * 1000,
+    );
+
+    return () => clearTimeout(timer);
+  }, [needsCheck, checkForUpdates]);
+
+  return { isFirstCheck, hasUpdate };
 };

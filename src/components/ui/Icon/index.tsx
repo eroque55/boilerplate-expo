@@ -1,9 +1,7 @@
-import { PressableProps, ViewStyle } from 'react-native';
+import { ViewStyle } from 'react-native';
 
 import * as IconAssets from '@/assets/icons/index';
-import { colors } from '@/global/colors';
-
-import Pressable from '../Pressable';
+import { colors } from '@/theme/colors';
 
 export type TIcon = keyof typeof IconAssets;
 
@@ -15,61 +13,42 @@ export type IconProps = {
   strokeWidth?: number;
   rotate?: number;
   fill?: string;
-  onPress?: () => void;
-  pressableProps?: Omit<PressableProps, 'onPress' | 'children' | 'className'>;
 };
 
 /**
- * Default:
+ * Defaults:
  * ```
  * size: 24
- * color: colors.neutral[100]
+ * color: colors.primary
  * strokeWidth: 2
  * ```
  */
-
 const Icon = ({
   name,
   size = 24,
-  color = colors.primary[100],
+  color = colors.primary,
   strokeWidth = 2,
   style,
   rotate = 0,
   fill = 'none',
-  onPress,
-  pressableProps = {
-    style: { padding: 4, margin: -4 },
-  },
 }: IconProps) => {
-  const renderIcon = () => {
-    return IconAssets[name]({
-      width: size,
-      height: size,
-      color,
-      strokeWidth,
-      style,
-      fill,
-      transform: [
-        {
-          rotate: `${rotate}deg`,
-        },
-      ],
-    });
-  };
+  const IconAsset = IconAssets[name];
 
-  if (onPress) {
-    return (
-      <Pressable
-        className="overflow-hidden rounded-full"
-        onPress={onPress}
-        {...pressableProps}
-      >
-        <>{renderIcon()}</>
-      </Pressable>
-    );
+  if (!IconAsset) {
+    return null;
   }
 
-  return renderIcon();
+  return (
+    <IconAsset
+      color={color}
+      fill={fill}
+      height={size}
+      strokeWidth={strokeWidth}
+      style={style}
+      transform={[{ rotate: `${rotate}deg` }]}
+      width={size}
+    />
+  );
 };
 
 export default Icon;

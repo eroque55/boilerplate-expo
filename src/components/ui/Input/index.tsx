@@ -13,17 +13,14 @@ import {
   View,
   ViewProps,
 } from 'react-native';
-import {
-  TextInputMask,
-  TextInputMaskOptionProp,
-  TextInputMaskTypeProp,
-} from 'react-native-masked-text';
+import MaskInput, { Mask } from 'react-native-mask-input';
 import Animated, {
   AnimatedProps,
   LinearTransition,
 } from 'react-native-reanimated';
 
-import { colors } from '@/global/colors';
+import { useTheme } from '@/hooks/common';
+import { colors } from '@/theme/colors';
 
 import ErrorText from '../ErrorText';
 import Icon, { IconProps } from '../Icon';
@@ -32,42 +29,31 @@ import Pressable from '../Pressable';
 type Props<TFieldValues extends FieldValues> = {
   label?: string;
   isPassword?: boolean;
-  placeholder?: string;
-  type?: TextInputMaskTypeProp;
-  options?: TextInputMaskOptionProp;
-  minHeight?: number;
+  leftIcon?: IconProps;
+  rightIcon?: IconProps;
+  mask?: Mask;
   containerProps?: AnimatedProps<ViewProps>;
-  icon?: IconProps;
+  useLayoutAnimation?: boolean;
 } & TextInputProps &
   UseControllerProps<TFieldValues>;
 
 const Input = <TFieldValues extends FieldValues>({
   label,
   isPassword,
-  placeholder,
-  type,
-  options,
+  leftIcon,
+  rightIcon,
+  mask,
+  containerProps,
   control,
   name,
   autoCapitalize = 'none',
-  minHeight,
-  containerProps,
-  icon,
   multiline,
   maxLength,
+  useLayoutAnimation = true,
   ...props
 }: Props<TFieldValues>) => {
+  const { isDark } = useTheme();
   const [passwordHidden, setPasswordHidden] = useState(isPassword);
-
-  const length = () => {
-    if (maxLength) {
-      return maxLength;
-    }
-    if (multiline || minHeight) {
-      return 250;
-    }
-    return 100;
-  };
 
   const {
     field,
@@ -77,83 +63,94 @@ const Input = <TFieldValues extends FieldValues>({
     name,
   });
 
+  const handlePaddingRight = () => {
+    if (isPassword) {
+      return 48;
+    }
+
+    if (rightIcon) {
+      return 38;
+    }
+  };
+
   const inputStyle: StyleProp<TextStyle> = {
     flexGrow: 1,
-    height: '100%',
-    padding: 12,
-    fontSize: 14,
-    color: colors.neutral[600],
-    paddingRight: isPassword || icon ? 44 : undefined,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    lineHeight: 24,
+    color: isDark ? colors.neutral[400] : colors.neutral[500],
+    paddingRight: handlePaddingRight(),
+    paddingLeft: leftIcon ? 38 : undefined,
   };
 
   const commonProps: TextInputProps = {
     autoCapitalize,
-    maxLength: length(),
-    multiline: !!minHeight || multiline,
-    placeholder,
-    placeholderTextColor: colors.neutral[400],
+    maxLength,
+    multiline,
+    placeholderTextColor: isDark ? colors.neutral[600] : colors.neutral[400],
     secureTextEntry: passwordHidden,
     style: inputStyle,
-    textAlignVertical: 'top',
+    textAlignVertical: multiline ? 'top' : 'center',
     value: field.value,
     onChangeText: field.onChange,
-    onBlur: field.onBlur,
     ...props,
   };
 
   return (
     <Animated.View
-      className="w-full gap-2"
-      layout={LinearTransition}
+      className="gap-1"
+      layout={useLayoutAnimation ? LinearTransition : undefined}
       {...containerProps}
     >
       {label && (
-        <Text className="font-areaextend_semibold text-base text-neutral-600">
+        <Text className="text-sm text-neutral-600 dark:text-neutral-300">
           {label}
         </Text>
       )}
 
-      <View className="w-full gap-px">
-        <View
-          className="border-neutral-20 w-full flex-row items-center rounded-lg border bg-white"
-          style={{ minHeight }}
-        >
-          {type ? (
-            <TextInputMask
-              options={options}
-              refInput={field.ref}
-              type={type}
-              {...commonProps}
+      <View className="w-full flex-row items-center overflow-hidden rounded-full bg-white dark:bg-neutral-800">
+        {mask ? (
+          <MaskInput ref={field.ref} mask={mask} {...commonProps} />
+        ) : (
+          <TextInput ref={field.ref} {...commonProps} />
+        )}
+
+        {leftIcon && (
+          <Icon
+            key={leftIcon.name}
+            style={{ position: 'absolute', left: 12, alignSelf: 'center' }}
+            {...leftIcon}
+          />
+        )}
+
+        {rightIcon && (
+          <Icon
+            key={rightIcon.name}
+            style={{ position: 'absolute', right: 12, alignSelf: 'center' }}
+            {...rightIcon}
+          />
+        )}
+
+        {isPassword && (
+          <Pressable
+            className="absolute right-3 items-center justify-center overflow-hidden rounded-full p-1"
+            testID="input-password-toggle"
+            onPress={() => {
+              setPasswordHidden(!passwordHidden);
+            }}
+          >
+            <Icon
+              key={passwordHidden ? 'EyeOffIcon' : 'EyeIcon'}
+              color={passwordHidden ? colors.neutral[400] : colors.primary}
+              name={passwordHidden ? 'EyeOffIcon' : 'EyeIcon'}
+              size={25}
             />
-          ) : (
-            <TextInput ref={field.ref} {...commonProps} />
-          )}
-
-          {isPassword && (
-            <Pressable
-              className="absolute right-2 items-center justify-center overflow-hidden rounded-full p-1"
-              onPress={() => {
-                setPasswordHidden(!passwordHidden);
-              }}
-            >
-              <Icon
-                key={passwordHidden ? 'EyeOff' : 'Eye'}
-                name={passwordHidden ? 'EyeOffIcon' : 'EyeIcon'}
-                size={24}
-                strokeWidth={1.5}
-              />
-            </Pressable>
-          )}
-
-          {icon && (
-            <View className="absolute right-2 self-center">
-              <Icon {...icon} />
-            </View>
-          )}
-        </View>
-
-        <ErrorText text={error?.message} />
+          </Pressable>
+        )}
       </View>
+
+      <ErrorText text={error?.message} />
     </Animated.View>
   );
 };

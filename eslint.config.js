@@ -1,15 +1,14 @@
 const js = require('@eslint/js');
-const pluginQuery = require('@tanstack/eslint-plugin-query');
 const { defineConfig, globalIgnores } = require('eslint/config');
 const expoConfig = require('eslint-config-expo/flat');
 const eslintConfigPrettier = require('eslint-config-prettier/flat');
-const importPlugin = require('eslint-plugin-import');
+const pluginJest = require('eslint-plugin-jest');
 const preferArrowFunctions = require('eslint-plugin-prefer-arrow-functions');
 const eslintPluginPrettierRecommended = require('eslint-plugin-prettier/recommended');
-const pluginReact = require('eslint-plugin-react');
 const pluginReactNative = require('eslint-plugin-react-native');
-const globals = require('globals');
+const testingLibrary = require('eslint-plugin-testing-library');
 const tseslint = require('typescript-eslint');
+const compat = require('@eslint/compat');
 
 module.exports = defineConfig([
   globalIgnores([
@@ -20,34 +19,34 @@ module.exports = defineConfig([
     'ios/*',
     '.expo/*',
     'web-build/*',
-    '*.config.*',
+    'coverage/*',
   ]),
   js.configs.recommended,
-  tseslint.configs.recommended,
-  pluginReact.configs.flat.recommended,
-  pluginReact.configs.flat['jsx-runtime'],
-  expoConfig,
-  importPlugin.flatConfigs.recommended,
+  compat.fixupConfigRules(expoConfig),
   eslintPluginPrettierRecommended,
   eslintConfigPrettier,
+  pluginJest.configs['flat/recommended'],
+  testingLibrary.configs['flat/react'],
   {
     files: ['**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     plugins: {
       js,
       'prefer-arrow-functions': preferArrowFunctions,
-      'react-native': pluginReactNative,
-      '@tanstack/query': pluginQuery,
+      'react-native': compat.fixupPluginRules(pluginReactNative),
     },
     extends: ['js/recommended'],
     languageOptions: {
       globals: {
-        ...globals.browser,
         __DEV__: 'readonly',
+        ...pluginJest.environments.globals.globals,
       },
+      parser: tseslint.parser,
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
         ecmaFeatures: { jsx: true },
+        projectService: true,
+        tsconfigRootDir: __dirname,
       },
     },
     settings: {
@@ -78,6 +77,13 @@ module.exports = defineConfig([
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-var-requires': 'error',
       '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': [
+        'error',
+        // onPress={async () => ...} e handleSubmit() sao idiomaticos em RN;
+        // o resto da regra continua ligado.
+        { checksVoidReturn: { attributes: false } },
+      ],
 
       // react
       'react/jsx-filename-extension': [1, { extensions: ['.tsx'] }],
@@ -122,7 +128,10 @@ module.exports = defineConfig([
       ],
 
       // React Hooks
-      'react-hooks/exhaustive-deps': 'off',
+      'react-hooks/exhaustive-deps': 'warn',
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/refs': 'warn',
+      'react-hooks/immutability': 'warn',
 
       // React Native
       'react-native/no-unused-styles': 'warn',
@@ -143,17 +152,16 @@ module.exports = defineConfig([
         },
       ],
 
-      // TanStack Query
-      '@tanstack/query/exhaustive-deps': 'error',
-      '@tanstack/query/no-rest-destructuring': 'error',
-      '@tanstack/query/stable-query-client': 'error',
-      '@tanstack/query/no-unstable-deps': 'error',
-      '@tanstack/query/infinite-query-property-order': 'error',
-      '@tanstack/query/no-void-query-fn': 'error',
-      '@tanstack/query/mutation-property-order': 'error',
+      //jest
+      'jest/no-disabled-tests': 'warn',
+      'jest/no-focused-tests': 'error',
+      'jest/no-identical-title': 'error',
+      'jest/prefer-to-have-length': 'warn',
+      'jest/valid-expect': 'error',
 
       // import
       'import/namespace': 'off',
+      'import/no-cycle': 'error',
       'import/no-dynamic-require': 'warn',
       'import/no-nodejs-modules': 'warn',
       'import/extensions': [
@@ -199,7 +207,6 @@ module.exports = defineConfig([
       'no-alert': 'warn',
       'prefer-const': 'error',
       'no-var': 'error',
-      'no-unused-vars': 'off',
       'object-shorthand': 'error',
       'prefer-template': 'error',
       'prefer-destructuring': [
@@ -209,7 +216,6 @@ module.exports = defineConfig([
           object: true,
         },
       ],
-      'no-undef': 'off',
 
       // Performance
       'no-await-in-loop': 'warn',
@@ -239,12 +245,6 @@ module.exports = defineConfig([
               name: 'zod',
               message: 'Please import from @/validation/zod instead',
             },
-            {
-              name: 'react-native-keyboard-controller',
-              importNames: ['KeyboardAwareScrollView'],
-              message:
-                'Please import from @/components/ui/KeyboardAwareScrollView instead',
-            },
           ],
           patterns: [
             {
@@ -259,9 +259,18 @@ module.exports = defineConfig([
   },
   {
     files: ['**/*.config.*'],
+    plugins: { '@typescript-eslint': tseslint.plugin },
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-var-requires': 'off',
+    },
+  },
+  {
+    files: ['**/*.test.{ts,tsx}', 'src/test/**'],
+    rules: {
+      // In RNTL v14 render, renderHook and fireEvent.* return a Promise; the
+      // rule still assumes the synchronous API of earlier versions.
+      'testing-library/no-await-sync-events': 'off',
     },
   },
 ]);

@@ -2,7 +2,7 @@ import { ErrorBoundaryProps, Link } from 'expo-router';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import Pressable from '../Pressable';
+import Pressable from '@/components/ui/Pressable';
 
 const StackTrace = ({ error }: { error: Error }) => {
   return (
@@ -10,7 +10,7 @@ const StackTrace = ({ error }: { error: Error }) => {
       className="my-2 border border-white/50"
       contentContainerClassName="p-3"
     >
-      <Text className="text-white">{error.stack}</Text>
+      <Text className="text-sm text-white">{error.stack}</Text>
     </ScrollView>
   );
 };
@@ -37,7 +37,7 @@ export const ErrorBoundary = ({ error, retry }: ErrorBoundaryProps) => {
 
         {process.env.NODE_ENV === 'development' && (
           <Link
-            className="text-center text-sm text-white/40 underline decoration-solid"
+            className="text-center text-white/40 underline decoration-solid"
             href={'/_sitemap' as '/'}
           >
             Sitemap

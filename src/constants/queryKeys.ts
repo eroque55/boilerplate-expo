@@ -2,11 +2,6 @@ export const queryKeys = {
   user: {
     me: ['user'] as const,
   },
-
-  zipCode: {
-    all: ['zip-codes'] as const,
-    details: (id: string) => [...queryKeys.zipCode.all, 'details', id] as const,
-  },
 } as const;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
