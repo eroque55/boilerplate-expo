@@ -65,7 +65,9 @@ For hooks needing React Query, use `createWrapper()` as `renderHook`'s `wrapper`
 
 `jest.setup.js` handles MMKV, SecureStore, Haptics, Worklets and Keyboard
 Controller (via the library's official `react-native-keyboard-controller/jest`).
-`jest.config.js` maps `*.svg` to `src/test/svg-mock.tsx`.
+`jest.config.js` sets `react-native-reanimated/jest/resolver` (so Reanimated 4
+loads its non-native initializers under `JSReanimated`) and maps `*.svg` to
+`src/test/svg-mock.tsx`.
 
 The SVG mapping is load-bearing: the SVG transformer does not run under Jest, so
 without it any component rendering an `Icon` throws

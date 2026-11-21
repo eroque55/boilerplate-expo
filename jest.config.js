@@ -1,5 +1,6 @@
 module.exports = {
   preset: 'jest-expo',
+  resolver: require.resolve('react-native-reanimated/jest/resolver'),
   setupFiles: ['./jest.setup.js'],
   moduleNameMapper: {
     '\.svg$': '<rootDir>/src/test/svg-mock.tsx',

@@ -64,7 +64,7 @@ const Login = () => {
         <Button
           text="Entrar"
           useLayoutAnimation={false}
-          onPress={handleSubmit(login)}
+          onPress={() => handleSubmit(login)()}
         />
 
         <Button

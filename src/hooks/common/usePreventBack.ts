@@ -1,44 +1,33 @@
-import { useRouter } from 'expo-router';
-import { useCallback, useEffect } from 'react';
-import { BackHandler } from 'react-native';
+import { usePreventRemove, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
 
 import { useDefaultModal } from '@/store/defaultModalStore';
 
-export const usePreventBack = (enabled?: boolean) => {
+export const usePreventBack = (enabled = false) => {
   const router = useRouter();
   const openModal = useDefaultModal(state => state.openModal);
+  const [isDismissing, setIsDismissing] = useState(false);
 
-  const handleBack = useCallback(() => {
-    if (!enabled) {
-      router.back();
-      return;
-    }
+  const shouldPrevent = enabled && !isDismissing;
 
+  usePreventRemove(shouldPrevent, ({ repeat }) => {
     openModal({
       title: 'Descartar?',
       message: 'Tem certeza que deseja descartar os dados inseridos?',
       confirmText: 'Descartar',
       cancelText: 'Cancelar',
-      onConfirm: () => router.back(),
+      onConfirm: () => {
+        setIsDismissing(true);
+        repeat();
+      },
     });
-  }, [enabled, router, openModal]);
+  });
 
-  useEffect(() => {
-    const backHandler = () => {
-      handleBack();
-
-      return true;
-    };
-
-    const backHandlerSubscription = BackHandler.addEventListener(
-      'hardwareBackPress',
-      backHandler,
-    );
-
-    return () => {
-      backHandlerSubscription.remove();
-    };
-  }, [handleBack]);
+  const handleBack = useCallback(() => {
+    if (router.canGoBack()) {
+      router.back();
+    }
+  }, [router]);
 
   return { handleBack };
 };

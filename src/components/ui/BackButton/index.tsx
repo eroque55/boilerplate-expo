@@ -1,10 +1,10 @@
 import { useRouter } from 'expo-router';
-import { GestureResponderEvent, TouchableOpacityProps } from 'react-native';
+import { GestureResponderEvent } from 'react-native';
 
 import Icon from '../Icon';
-import Pressable from '../Pressable';
+import Pressable, { PressableProps } from '../Pressable';
 
-const BackButton = ({ onPress, ...props }: TouchableOpacityProps) => {
+const BackButton = ({ onPress, ...props }: PressableProps) => {
   const router = useRouter();
 
   const handlePress = (e: GestureResponderEvent) => {
@@ -13,7 +13,7 @@ const BackButton = ({ onPress, ...props }: TouchableOpacityProps) => {
       return;
     }
 
-    if (router.canDismiss()) {
+    if (router.canGoBack()) {
       router.back();
     }
   };

@@ -7,7 +7,7 @@
 Expo boilerplate. Every app starts from a clone of this, so a mistake here is
 copied into every project — prefer the correct fix over the quick one.
 
-**Stack:** Expo SDK 57 · React Native 0.86 · React 19.2 (Compiler on) ·
+**Stack:** Expo SDK 58 · React Native 0.88 · React 19.3 (Compiler on) ·
 Expo Router (typed routes) · NativeWind 5 + Tailwind 4 · TanStack Query 5 ·
 Zustand 5 · React Hook Form + Zod 4 · MMKV 4 + SecureStore · Reanimated 4 ·
 Jest + Testing Library v14
@@ -52,10 +52,10 @@ code in that area, not after something breaks.
 4. **English in code, Portuguese only in strings the user reads.**
 5. **Don't silence a lint rule to make a diff look clean.** If a rule is wrong,
    say why and disable it deliberately with the reason recorded.
-6. **Expo SDK 57 changed a lot.** Check the versioned docs and the installed
+6. **Expo SDK 58 changed a lot.** Check the versioned docs and the installed
    `.d.ts` in `node_modules` before assuming an API — several APIs in this
-   project (Testing Library v14, `Stack.Protected`, `performAndroidHapticsAsync`)
-   differ from what older examples show.
+   project (Testing Library v14, `Stack.Protected`, `usePreventRemove`,
+   `performAndroidHapticsAsync`) differ from what older examples show.
 
 ## State of the repo
 

@@ -40,7 +40,7 @@ const FormHost = ({ isPassword, label, placeholder }: HostProps) => {
         withoutDelay
         testID="submit"
         text="Enviar"
-        onPress={handleSubmit(() => {})}
+        onPress={() => handleSubmit(() => {})()}
       />
     </>
   );

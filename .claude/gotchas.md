@@ -7,17 +7,19 @@ already made — do not undo it without reading why.
 
 `app/index.tsx` must stay a dispatcher.
 
-When a `Stack.Protected` guard flips to false, Expo Router **removes every
-history entry** for that group and falls back to the anchor route — the index
-screen. If the index is a real screen (an intro, a splash, a landing), logout
-lands there and stays there, because nothing moves it on.
+In `app/_layout.tsx`, `export const unstable_settings = { anchor: 'index' }`
+marks `app/index.tsx` as the navigator's anchor route. When a `Stack.Protected`
+guard is false, Expo Router redirects there by default. If the index is a real
+screen (an intro, a splash, a landing), logout lands there and stays there,
+because nothing moves it on.
 
 Keeping it a dispatcher that renders `null` while loading and `<Redirect>`
-otherwise makes both directions deterministic:
+otherwise makes cold-boot deep links (while `AuthContext` is still loading) and
+auth transitions deterministic:
 
 ```
-logout → (main) guard drops → history cleared → index → redirect /login
-login  → (auth) guard drops → history cleared → index → redirect /home
+logout → (main) guard false → anchor (index) → redirect /login
+login  → (auth) guard false → anchor (index) → redirect /home
 ```
 
 An animated intro is **not** a route. Render it as an absolutely-positioned
@@ -118,3 +120,18 @@ install, remove or version change — it catches misalignment that `yarn install
 happily accepts.
 
 SDK packages use `~` (patch only), never `^`.
+
+## NativeWind 5 + React Native 0.88 Metro shim
+
+`withNativewind` (`react-native-css@3.0.x`) enables `globalClassNamePolyfill`,
+which redirects every native `import ... from 'react-native'` to
+`react-native-css/components`. That module hardcodes a React Native 0.81 export
+list and omits exports added in React Native 0.88 — notably
+`NativeComponentRegistry`, which Expo Router 58's `ActivityContents` calls at
+import time (`NativeComponentRegistry.get(...)`), crashing on boot with
+`TypeError: Cannot read property 'get' of undefined`.
+
+`metro.config.js` routes redirected `'react-native'` imports through
+`metro.rn-css-shim.js`, merging property descriptors from both `react-native`
+and `react-native-css/components` without invoking lazy getters. Remove the shim
+once `react-native-css` re-exports React Native 0.88's full public surface.

@@ -2,8 +2,8 @@
 import { ComponentProps, PropsWithChildren } from 'react';
 import {
   GestureResponderEvent,
-  PressableProps,
   Pressable as RNPressable,
+  PressableProps as RNPressableProps,
   View,
 } from 'react-native';
 import { KeyboardController } from 'react-native-keyboard-controller';
@@ -11,10 +11,10 @@ import Animated from 'react-native-reanimated';
 
 import { HapticIntent, triggerHaptic } from '@/utils/haptics';
 
-type Props = {
+export type PressableProps = {
   withoutFeedback?: boolean;
   haptic?: HapticIntent | false;
-} & PressableProps;
+} & RNPressableProps;
 
 const Pressable = ({
   withoutFeedback = false,
@@ -22,7 +22,7 @@ const Pressable = ({
   children,
   onPress,
   ...props
-}: PropsWithChildren<Props>) => {
+}: PropsWithChildren<PressableProps>) => {
   const handlePress = (event: GestureResponderEvent) => {
     void KeyboardController.dismiss();
 

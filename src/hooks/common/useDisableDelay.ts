@@ -15,7 +15,7 @@ export const useDisableDelay = (delay = 1000) => {
   }, []);
 
   const executeWithDelay = useCallback(
-    async (func: () => void | Promise<void>) => {
+    async (func: () => unknown) => {
       if (isRunning.current) {
         return;
       }

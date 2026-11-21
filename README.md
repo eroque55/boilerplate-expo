@@ -8,7 +8,7 @@ just documenting them.
 
 |                                                  |                                            |
 | ------------------------------------------------ | ------------------------------------------ |
-| **Expo SDK 57** · React Native 0.86 · React 19.2 | New Architecture, React Compiler enabled   |
+| **Expo SDK 58** · React Native 0.88 · React 19.3 | New Architecture, React Compiler enabled   |
 | **Expo Router**                                  | File-based routing with typed routes       |
 | **NativeWind 5** + Tailwind 4                    | Styling, with the palette shared with JS   |
 | **TanStack Query 5**                             | Server state                               |
@@ -79,8 +79,8 @@ invalidated by a stampede.
 
 **Navigation** — route groups are guarded with `Stack.Protected`, so there is no state where
 you are in `(main)` without a user or in `(auth)` with one. `app/index.tsx` is the anchor
-route: when a guard drops, Expo Router clears the history and returns there. Keep it a
-dispatcher that redirects — **never** put a real screen in it, or the app will get stuck
+route (`unstable_settings.anchor`): when a guard is false, Expo Router redirects there. Keep
+it a dispatcher that redirects — **never** put a real screen in it, or the app will get stuck
 there on logout.
 
 **Storage** — `utils/storage.ts` exposes an MMKV instance encrypted with AES-256. The key is

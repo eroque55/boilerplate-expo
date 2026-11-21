@@ -9,7 +9,6 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { DefaultModal } from '@/components/ui';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
@@ -18,6 +17,8 @@ import { queryClient } from '@/services/queryClient';
 import { colors } from '@/theme/colors';
 
 export { ErrorBoundary } from '@/components/layout';
+
+export const unstable_settings = { anchor: 'index' };
 
 setDefaultOptions({ locale: ptBR });
 
@@ -44,8 +45,6 @@ const ProtectedStack = () => {
         },
       }}
     >
-      <Stack.Screen name="index" />
-
       <Stack.Protected guard={!user}>
         <Stack.Screen name="(auth)" />
       </Stack.Protected>
@@ -71,15 +70,13 @@ const RootLayout = () => {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
         <KeyboardProvider>
-          <SafeAreaProvider>
-            <AuthProvider>
-              <StatusBar style="auto" />
+          <AuthProvider>
+            <StatusBar style="auto" />
 
-              <ProtectedStack />
+            <ProtectedStack />
 
-              <DefaultModal />
-            </AuthProvider>
-          </SafeAreaProvider>
+            <DefaultModal />
+          </AuthProvider>
         </KeyboardProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>

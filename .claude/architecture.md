@@ -135,11 +135,12 @@ Mutations can declare `meta.invalidateQueries` — the `MutationCache` in
 
 ## Providers
 
+`ExpoRoot` already wraps the tree in `SafeAreaProvider`. Inside it,
 `app/_layout.tsx` mounts, outside in:
 
 ```
 GestureHandlerRootView → QueryClientProvider → KeyboardProvider
-  → SafeAreaProvider → AuthProvider → ProtectedStack
+  → AuthProvider → ProtectedStack
 ```
 
 The `QueryClient` is a module singleton from `services/queryClient.ts`. Never

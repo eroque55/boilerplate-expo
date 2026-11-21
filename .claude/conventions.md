@@ -15,8 +15,8 @@ Breaking any of these either fails the lint or breaks the app.
 
 ### `src/app/index.tsx` stays a dispatcher
 
-It is the anchor route. When a `Stack.Protected` guard drops, Expo Router
-clears the group's history and returns there. Put a real screen in it and the
+It is the anchor route (`unstable_settings.anchor`). When a `Stack.Protected`
+guard is false, Expo Router redirects there. Put a real screen in it and the
 app gets stuck on that screen after logout. It renders `null` while loading
 and a `<Redirect>` otherwise — nothing else.
 
