@@ -45,6 +45,8 @@
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
     "@eslint/compat": "^2.1.1",
     "@eslint/js": "^10.0.1",
     "@react-native/jest-preset": "0.88.1",
@@ -61,6 +63,7 @@
     "eslint-plugin-prettier": "^5.5.7",
     "eslint-plugin-react-native": "^5.0.0",
     "eslint-plugin-testing-library": "^7.16.2",
+    "husky": "^9.1.7",
     "jest": "~30.5.2",
     "jest-expo": "~58.0.14",
     "jiti": "^2.7.0",
@@ -89,7 +92,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "doctor": "npx expo-doctor"
+    "doctor": "npx expo-doctor",
+    "prepare": "node .husky/install.mjs"
   },
   "private": true,
   "resolutions": {

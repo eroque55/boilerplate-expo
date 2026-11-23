@@ -41,6 +41,7 @@ code in that area, not after something breaks.
 | Add a component with default styles               | `.claude/gotchas.md`                     |
 | See more than 5 lint warnings                     | `.claude/gotchas.md`                     |
 | Add, remove or bump a dependency                  | `.claude/gotchas.md`, then `yarn doctor` |
+| Write a commit message or open a PR               | `CONTRIBUTING.md`                        |
 
 ## Non-negotiables
 
