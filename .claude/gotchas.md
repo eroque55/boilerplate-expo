@@ -82,21 +82,58 @@ A sixth warning means you introduced it. Do not silence any of these with
 
 ## Token refresh is deduplicated
 
-`AuthContext` shares one in-flight refresh promise. Concurrent 401s await the
-same promise instead of each firing a refresh — with a rotating refresh token,
-parallel refreshes invalidate each other and log the user out.
+`services/http.ts` shares one module-level in-flight refresh promise.
+Concurrent 401s await the same promise instead of each firing a refresh — the
+API rotates refresh tokens and treats a reused one as theft, so parallel
+refreshes revoke the whole session and log the user out.
 
-The whole `useCallback` chain (`fetchUser` → `logout` → `runRefresh` →
-`refreshAccessToken`) exists so the interceptor effect registers **once**. It
-relies on React Query's `mutateAsync` being a stable reference. Break that
-chain and the interceptor re-registers every render, leaking handlers.
+The interceptors live in `http.ts`, registered once at import, not in a React
+effect. When the refresh fails, `http.ts` clears the session and calls the
+listener `AuthContext` registered with `onSessionExpired`, which drops the user
+so the `Stack.Protected` guards send the app to login.
+
+`PUBLIC_URLS` lists the auth routes that must never carry the `Authorization`
+header nor trigger a refresh on 401. A 401 from `/auth/refresh` retried through
+the refresh would wait on its own promise forever.
+
+## "Manter-me conectado" and token storage
+
+`session.start(tokens, persist)` always keeps the tokens in memory and writes
+them to the encrypted MMKV only when the user asked to stay logged in. On
+rotation, `session.rotate` persists the new pair only if the old one was
+persisted. Never call `storage.clearAll()` to log out — it also wipes data that
+has nothing to do with the session; use `session.clear()`.
+
+At boot, `AuthContext` restores a stored session with `GET /users/me`; an
+expired access token is refreshed by the interceptor on the way. A failure for
+any other reason (offline) leaves the tokens alone, so the next launch can
+still restore the session.
+
+## The API URL in development
+
+`src/env.ts` reads `EXPO_PUBLIC_API_URL`. In development, when it is unset, it
+falls back to port 3333 on the host in `Constants.expoConfig.hostUri` — the
+computer running Metro. `localhost` would point to the phone or emulator
+itself. Outside development the variable is required and the app fails at
+boot without it, because `EXPO_PUBLIC_*` values are inlined at build time.
+
+`process.env.EXPO_PUBLIC_API_URL` must be read with that exact member
+expression. Destructuring `process.env` or reading it dynamically defeats the
+inlining and yields `undefined` in a build.
 
 ## API error messages
 
 `handleError` reads `error.response.data`, not `error.message`. Axios's
 `message` is `"Request failed with status code 400"` — showing it to the user
-hides what the API actually said. Supported shapes: `{ message }`,
-`{ error: { message } }` (Strapi), and a plain string.
+hides what the API actually said. The API answers every error with RFC 9457
+Problem Details, and `detail` is the pt-BR message meant for the user; a plain
+string body is also accepted.
+
+A 422 also carries `errors: [{ pointer: '#/email', detail }]`.
+`getFieldErrors(error)` turns it into `{ email: '…' }` for `setError`.
+
+Pass `meta: { suppressErrorModal: true }` on a mutation whose failure the user
+should not see as a modal (`useLogout`, the boot-time `useFetchMe`).
 
 ## Never run a scaffolding command to diagnose
 

@@ -1,25 +1,34 @@
-import { AxiosError, AxiosResponse } from 'axios';
+import { AxiosError, AxiosHeaders } from 'axios';
 
-import { handleError } from './handleError';
+import { getFieldErrors, handleError } from './handleError';
 
 const DEFAULT_MESSAGE = 'Houve um imprevisto, tente novamente mais tarde';
 
-const axiosErrorWith = (data: unknown) => {
-  const response = {
-    data,
-    status: 400,
-    statusText: 'Bad Request',
-    headers: {},
-    config: {},
-  } as AxiosResponse;
-
-  return new AxiosError(
-    'Request failed with status code 400',
+const buildAxiosError = (data: unknown, status = 400) =>
+  new AxiosError(
+    `Request failed with status code ${status}`,
     'ERR_BAD_REQUEST',
     undefined,
     undefined,
-    response,
+    {
+      data,
+      status,
+      statusText: 'Bad Request',
+      headers: {},
+      config: { headers: new AxiosHeaders() },
+    },
   );
+
+const validationProblem = {
+  type: 'about:blank',
+  title: 'Unprocessable Entity',
+  status: 422,
+  detail: 'Dados inválidos',
+  instance: '/v1/auth/register',
+  errors: [
+    { pointer: '#/email', detail: 'E-mail inválido' },
+    { pointer: '#/address/zipCode', detail: 'CEP inválido' },
+  ],
 };
 
 describe('handleError', () => {
@@ -31,42 +40,45 @@ describe('handleError', () => {
     jest.restoreAllMocks();
   });
 
-  it('returns the string itself when given one', () => {
-    expect(handleError('Erro customizado')).toBe('Erro customizado');
+  it('returns plain strings directly', () => {
+    expect(handleError('Sessão expirada')).toBe('Sessão expirada');
   });
 
-  it('extracts the API message from { message }', () => {
-    expect(
-      handleError(axiosErrorWith({ message: 'E-mail já cadastrado' })),
-    ).toBe('E-mail já cadastrado');
-  });
-
-  it('extracts the nested message from { error: { message } }', () => {
+  it('extracts detail from RFC 9457 Problem Details responses', () => {
     expect(
       handleError(
-        axiosErrorWith({ error: { message: 'Credenciais inválidas' } }),
+        buildAxiosError(
+          {
+            type: 'about:blank',
+            title: 'Unauthorized',
+            status: 401,
+            detail: 'E-mail ou senha incorretos',
+            instance: '/v1/auth/login',
+          },
+          401,
+        ),
       ),
-    ).toBe('Credenciais inválidas');
+    ).toBe('E-mail ou senha incorretos');
   });
 
-  it('accepts data as a plain string', () => {
-    expect(handleError(axiosErrorWith('Falha no servidor'))).toBe(
+  it('accepts response data as a plain string', () => {
+    expect(handleError(buildAxiosError('Falha no servidor'))).toBe(
       'Falha no servidor',
     );
   });
 
-  it('falls back to the default message when the response has nothing usable', () => {
-    expect(handleError(axiosErrorWith({ status: 400 }))).toBe(DEFAULT_MESSAGE);
-    expect(handleError(axiosErrorWith(null))).toBe(DEFAULT_MESSAGE);
+  it('falls back to the default message when the response has no detail', () => {
+    expect(handleError(buildAxiosError({}))).toBe(DEFAULT_MESSAGE);
+    expect(handleError(buildAxiosError(null))).toBe(DEFAULT_MESSAGE);
   });
 
-  it('does not use the generic axios message when the API responded', () => {
-    const message = handleError(axiosErrorWith({ message: 'Sem estoque' }));
-
-    expect(message).not.toContain('Request failed with status code');
+  it('never shows the generic Axios message', () => {
+    expect(
+      handleError(buildAxiosError({ title: 'Bad Request' })),
+    ).not.toContain('Request failed with status code');
   });
 
-  it('uses the message from a plain Error', () => {
+  it('returns Error.message for standard Error instances', () => {
     expect(handleError(new Error('Sem conexão com a internet!'))).toBe(
       'Sem conexão com a internet!',
     );
@@ -84,5 +96,21 @@ describe('handleError', () => {
     handleError(error);
 
     expect(console.error).toHaveBeenCalledWith(error);
+  });
+});
+
+describe('getFieldErrors', () => {
+  it('maps JSON pointers to form field paths', () => {
+    expect(getFieldErrors(buildAxiosError(validationProblem, 422))).toEqual({
+      email: 'E-mail inválido',
+      'address.zipCode': 'CEP inválido',
+    });
+  });
+
+  it('returns an empty object when the error has no field errors', () => {
+    expect(
+      getFieldErrors(buildAxiosError({ detail: 'Não encontrado' })),
+    ).toEqual({});
+    expect(getFieldErrors(new Error('boom'))).toEqual({});
   });
 });

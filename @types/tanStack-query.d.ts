@@ -5,6 +5,9 @@ import '@tanstack/react-query';
 declare module '@tanstack/react-query' {
   interface Register {
     queryKey: TQueryKey;
-    mutationMeta: { invalidateQueries: TQueryKey };
+    mutationMeta: {
+      invalidateQueries?: TQueryKey;
+      suppressErrorModal?: boolean;
+    };
   }
 }

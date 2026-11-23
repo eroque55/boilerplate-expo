@@ -11,19 +11,21 @@ export const queryClient = new QueryClient({
       retry: false,
       initialDataUpdatedAt: 0,
     },
-    mutations: {
-      onError: error => {
-        triggerHaptic('error');
-
-        useDefaultModal.getState().openModal({
-          title: 'Ops!',
-          message: handleError(error),
-          confirmText: 'Fechar',
-        });
-      },
-    },
   },
   mutationCache: new MutationCache({
+    onError: (error, _variables, _context, mutation) => {
+      if (mutation.meta?.suppressErrorModal) {
+        return;
+      }
+
+      triggerHaptic('error');
+
+      useDefaultModal.getState().openModal({
+        title: 'Ops!',
+        message: handleError(error),
+        confirmText: 'Fechar',
+      });
+    },
     onSuccess: (_data, _variables, _context, mutation) => {
       if (mutation.meta?.invalidateQueries) {
         void queryClient.invalidateQueries({

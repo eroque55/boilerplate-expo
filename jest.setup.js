@@ -1,3 +1,5 @@
+process.env.EXPO_PUBLIC_API_URL ??= 'http://localhost:3333/v1';
+
 jest.mock('react-native-keyboard-controller', () =>
   require('react-native-keyboard-controller/jest'),
 );
@@ -14,7 +16,7 @@ jest.mock('react-native-mmkv', () => {
     getString: jest.fn(key => storageMap.get(key)),
     getBoolean: jest.fn(key => storageMap.get(key)),
     getNumber: jest.fn(key => storageMap.get(key)),
-    delete: jest.fn(key => storageMap.delete(key)),
+    remove: jest.fn(key => storageMap.delete(key)),
     contains: jest.fn(key => storageMap.has(key)),
     clearAll: jest.fn(() => storageMap.clear()),
     getAllKeys: jest.fn(() => Array.from(storageMap.keys())),

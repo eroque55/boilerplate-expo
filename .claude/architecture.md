@@ -20,14 +20,15 @@ src/
     common/           Reusable hooks, exported through index.ts
   services/
     api/              Raw API functions. No React.
-    http.ts           Axios instance + request interceptor
+    http.ts           Axios instance, auth header, deduplicated 401 refresh
     queryClient.ts    QueryClient singleton
   store/              Zustand stores
   test/               Test helpers. Never imported by app code.
   theme/              colors.ts (source of truth) + global.css
-  types/              Domain types (TUser, TViaCEPResponse)
+  types/              Domain and API types (TUser, TAuthSession, TProblemDetails)
   utils/              Pure helpers. No React, no imports from components.
   validation/         Zod config (zod.ts) + form schemas (*.validation.ts)
+  env.ts              API URL (EXPO_PUBLIC_API_URL, Metro host in dev)
 @types/               Ambient declarations, module augmentation
 ```
 
@@ -123,6 +124,25 @@ should already have been hoisted.
 | A pure helper                              | `utils/`                                                      |
 | A form schema                              | `validation/name.validation.ts`                               |
 | A domain type                              | `types/`                                                      |
+
+## The API contract
+
+The backend is [boilerplate-api](https://github.com/eroque55/boilerplate-api).
+The API URL includes the version (`http://<host>:3333/v1`), so services use
+paths relative to it (`auth/login`, `users/me`).
+
+| Call                   | Service                   | Returns        |
+| ---------------------- | ------------------------- | -------------- |
+| `POST auth/register`   | `authService.register`    | `TAuthSession` |
+| `POST auth/login`      | `authService.login`       | `TAuthSession` |
+| `POST auth/refresh`    | `services/http.ts` (only) | `TTokenPair`   |
+| `POST auth/logout`     | `authService.logout`      | `204`          |
+| `POST auth/logout-all` | `authService.logoutAll`   | `204`          |
+| `GET users/me`         | `usersService.fetchMe`    | `TUser`        |
+
+Lists come as `TPaginated<T>` (`{ data, meta: { page, pageSize, pageCount, total } }`),
+single objects with no envelope, errors as `TProblemDetails`. When the API
+changes a schema, update `types/` to match its OpenAPI document at `/docs`.
 
 ## Query keys
 

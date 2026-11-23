@@ -4,6 +4,10 @@ An opinionated Expo template with batteries included: authentication flow, encry
 storage, a UI kit, testing set up and linting that enforces the conventions instead of
 just documenting them.
 
+It is the mobile companion of [boilerplate-api](https://github.com/eroque55/boilerplate-api)
+(NestJS) and speaks its contract out of the box: JWT access tokens, rotating
+refresh tokens and RFC 9457 error responses.
+
 ## Stack
 
 |                                                  |                                            |
@@ -20,13 +24,20 @@ just documenting them.
 
 ## Get started
 
-1. Install dependencies:
+1. Start [boilerplate-api](https://github.com/eroque55/boilerplate-api)
+   (`yarn db:up && yarn db:migrate && yarn db:seed && yarn dev`) on the same
+   machine. In development the app finds it on port 3333 of the computer running
+   Metro, so emulators and physical devices on the same network work without
+   configuration. To use another API, copy `.env.example` to `.env` and set
+   `EXPO_PUBLIC_API_URL`.
+
+2. Install dependencies:
 
    ```bash
    yarn install
    ```
 
-2. Create a development build — Expo Go is not enough, the project uses native modules:
+3. Create a development build — Expo Go is not enough, the project uses native modules:
 
    ```bash
    yarn android
@@ -34,7 +45,7 @@ just documenting them.
    yarn ios
    ```
 
-3. Start the development server:
+4. Start the development server:
 
    ```bash
    yarn start
@@ -45,7 +56,10 @@ just documenting them.
 1. Replace `changeme` — it appears 5× in `app.json` (`name`, `slug`, `scheme`,
    `ios.bundleIdentifier`, `android.package`) and once in `package.json`.
 
-2. Replace the icons in `assets/expo/`. [This Figma template](https://www.figma.com/community/file/1466490409418563617/expo-app-icon-splash-v2-community)
+2. Set `EXPO_PUBLIC_API_URL` (with the `/v1` prefix) for preview and production
+   builds — it is required outside development.
+
+3. Replace the icons in `assets/expo/`. [This Figma template](https://www.figma.com/community/file/1466490409418563617/expo-app-icon-splash-v2-community)
    generates every size you need.
 
 ## Project structure
@@ -73,9 +87,11 @@ src/
 
 ## What's included
 
-**Authentication** — `AuthContext` handles login, logout, user fetching and token refresh.
+**Authentication** — `AuthContext`, `utils/session.ts` and `services/http.ts` talk to the
+API's `/auth/login`, `/auth/refresh`, `/auth/logout` and `/users/me`. "Manter-me conectado"
+decides whether the tokens are written to encrypted storage or kept in memory only.
 Concurrent 401s share a single refresh promise, so a rotating refresh token never gets
-invalidated by a stampede.
+invalidated by a stampede, and logout revokes the refresh token on the server.
 
 **Navigation** — route groups are guarded with `Stack.Protected`, so there is no state where
 you are in `(main)` without a user or in `(auth)` with one. `app/index.tsx` is the anchor
@@ -87,8 +103,9 @@ there on logout.
 generated on device and kept in the Keychain / Keystore, never in the bundle. If the secure
 store is unavailable it degrades to unencrypted rather than crashing at boot.
 
-**Error handling** — every failed mutation goes through `handleError`, which extracts the
-message the API actually sent, and surfaces it in the global modal with an error haptic.
+**Error handling** — every failed mutation goes through `handleError`, which reads the pt-BR
+`detail` of the API's RFC 9457 Problem Details, and surfaces it in the global modal with an
+error haptic. `getFieldErrors` maps a `422`'s `errors[].pointer` to form field names.
 
 **Haptics** — `triggerHaptic('press' | 'success' | 'toggleOn' | ...)` states _what happened_
 and maps it to each platform's native vocabulary. On Android it uses
