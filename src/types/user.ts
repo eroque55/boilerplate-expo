@@ -1,20 +1,10 @@
-export type TLoginUser = {
-  id: number;
-  documentId: string;
-  email: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-  publishedAt?: Date;
-};
-
-export type TLoginResponse = {
-  jwt: string;
-  user: TLoginUser;
-  refreshToken: string;
-};
+export type TRole = 'USER' | 'ADMIN';
 
 export type TUser = {
-  id: number;
-  documentId: string;
+  id: string;
   name: string;
+  email: string;
+  role: TRole;
+  createdAt: string;
+  updatedAt: string;
 };
