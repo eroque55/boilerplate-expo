@@ -1,9 +1,11 @@
 {
   "recommendations": [
-    "expo.vscode-expo-tools",
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
+    "editorconfig.editorconfig",
+    "joshbolduc.commitlint",
+    "expo.vscode-expo-tools",
     "bradlc.vscode-tailwindcss",
-    "editorconfig.editorconfig"
+    "orta.vscode-jest"
   ]
 }
